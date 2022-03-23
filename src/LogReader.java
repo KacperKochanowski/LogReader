@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,7 +45,6 @@ public class LogReader {
                     List<String> lvlMatches = new ArrayList<>();
                     Map<String, Integer> mapLvl = new HashMap<>();
                     Set<String> librarySet = new HashSet<>();
-                    long startTime = System.nanoTime();
                     while ((strLine = bufferedReader.readLine()) != null) {
                         Matcher m = Pattern.compile(timestampRgx).matcher(strLine);
                         Matcher lvl = Pattern.compile(levelRgx).matcher(strLine);
@@ -59,12 +59,7 @@ public class LogReader {
                             librarySet.add(lib.group());
                         }
                     }
-
-                    long endTime = System.nanoTime();
-
-                    long duration = (endTime - startTime);
-
-                    timeConverter(duration);
+                    timeConverter(file);
 
                     List<String> sortedMatches = dataMatches.stream().sorted().toList(); // it's sorted because first log from server.log is the newest from whole file and due to this case, it has to sorted ;)
 
@@ -88,12 +83,8 @@ public class LogReader {
         }
     }
 
-    private static void timeOfReadingLog(File file) {
-
-    }
-
     private static void distinctTypesOfLibrariesInLogs(Set<String> librarySet) {
-        System.out.println("\n Libraries in log: " + librarySet);
+        System.out.println("\nLibraries in log: " + librarySet);
     }
 
     private static void thrownLogSeverity(List<String> lvlMatches, Map<String, Integer> mapLvl) {
@@ -122,15 +113,19 @@ public class LogReader {
         System.out.printf("\nThe share of logs with a severity of 'ERROR' or higher compared to all logs is around: %.2f\n", ratio);
     }
 
-    private static void timeConverter(long duration) {
+    private static void timeConverter(File file) throws IOException{
+        long startTime = System.nanoTime();
+        List<String> readingFile = Files.readAllLines(Paths.get(String.valueOf(file)), StandardCharsets.UTF_8);
+        long endTime = System.nanoTime();
+        long duration = (endTime - startTime);
         if (duration <= 1_000_000_000) {
-            System.out.println("\nFile has been written in: " + duration + " nanoseconds.\n");
+            System.out.println("\nThe file was read in: " + duration + " nanoseconds.\n");
         } else if (duration < 60_000_000_000L) {
             long timeConvertedIntoSeconds = TimeUnit.SECONDS.convert(duration, TimeUnit.NANOSECONDS);
-            System.out.println("\nFile has been written in: " + timeConvertedIntoSeconds + " seconds.\n");
+            System.out.println("\nThe file was read in: " + timeConvertedIntoSeconds + " seconds.\n");
         } else if (duration > 60_000_000_000L) {
             long timeConvertedIntoMinutes = TimeUnit.MINUTES.convert(duration, TimeUnit.NANOSECONDS);
-            System.out.println("\nFile has been written in: " + timeConvertedIntoMinutes + " minutes.");
+            System.out.println("\nThe file was read in: " + timeConvertedIntoMinutes + " minutes.");
         }
     }
 
