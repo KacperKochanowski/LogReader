@@ -1,41 +1,37 @@
-import org.w3c.dom.ls.LSOutput;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.text.DateFormat;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 public class LogReader {
 
     final private static String timestampRgx = "(?<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})";
+    final private static String levelRgx = "(?<level>INFO|ERROR|WARN|TRACE|DEBUG|FATAL)";
 
     public static void main(String[] args) throws IOException {
 
         try (FileInputStream fStream = new FileInputStream("server.log")) {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fStream));
             String strLine;
-            List<String> matches = new ArrayList<>();
+            List<String> dataMatches = new ArrayList<>();
+            List<String> lvlMatches = new ArrayList<>();
+            Map<String, Integer> mapLvl = new HashMap<>();
             long startTime = System.nanoTime();
             while ((strLine = bufferedReader.readLine()) != null) {
                 Matcher m = Pattern.compile(timestampRgx).matcher(strLine);
+                Matcher lvl = Pattern.compile(levelRgx).matcher(strLine);
                 while (m.find()) {
-                    matches.add(m.group());
+                    dataMatches.add(m.group());
+                }
+                while (lvl.find()) {
+                    lvlMatches.add(lvl.group());
                 }
                 System.out.println(strLine);
             }
@@ -46,21 +42,31 @@ public class LogReader {
 
             timeConverter(duration);
 
-            List <String> sortedMatches = matches.stream().sorted().toList();
+            List<String> sortedMatches = dataMatches.stream().sorted().toList();
 
             String dataOfLastLog = sortedMatches.get(sortedMatches.size() - 1);
 //            System.out.println(dataOfLastLog);
             String dataOfFirstLog = sortedMatches.get(0);
 //            System.out.println(dataOfFirstLog);
-            differenceBetweenLastAndFirstLog(dataOfFirstLog,dataOfLastLog);
+            differenceBetweenLastAndFirstLog(dataOfFirstLog, dataOfLastLog);
+
+            thrownLogSeverity(lvlMatches, mapLvl);
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
-
-
     }
 
+    private static void thrownLogSeverity(List<String> lvlMatches, Map<String, Integer> mapLvl) {
+        for (String lvl : lvlMatches) {
+            if (!mapLvl.containsKey(lvl)) {
+                mapLvl.put(lvl, 1);
+            } else {
+                mapLvl.put(lvl, mapLvl.get(lvl) + 1);
+            }
+        }
+        System.out.println("\n Types of logs: " + mapLvl);
+    }
 
     private static void timeConverter(long duration) {
         if (duration <= 1_000_000_000) {
