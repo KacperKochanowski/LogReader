@@ -59,7 +59,7 @@ public class LogReader {
                             librarySet.add(lib.group());
                         }
                     }
-                    timeConverter(file);
+                    timeNeededToReadTheFile(file);
 
                     List<String> sortedMatches = dataMatches.stream().sorted().toList(); // it's sorted because first log from server.log is the newest from whole file and due to this case, it has to sorted ;)
 
@@ -71,7 +71,7 @@ public class LogReader {
 
                     thrownLogSeverity(lvlMatches, mapLvl);
 
-                    ratioOfErrorLogsOrHigherToTheRest(mapLvl);
+                    ratioOfAtLeastErrorLogsToAll(mapLvl);
 
                     distinctTypesOfLibrariesInLogs(librarySet);
 
@@ -98,7 +98,7 @@ public class LogReader {
         System.out.println("\nTypes of logs: " + mapLvl);
     }
 
-    private static void ratioOfErrorLogsOrHigherToTheRest(Map<String, Integer> mapLvl) {
+    private static void ratioOfAtLeastErrorLogsToAll(Map<String, Integer> mapLvl) {
         int logsWithSeverityErrorOrHigher = 0;
         int logsWithSeverityLessThanError = 0;
         double ratio;
@@ -113,7 +113,7 @@ public class LogReader {
         System.out.printf("\nThe share of logs with a severity of 'ERROR' or higher compared to all logs is around: %.2f\n", ratio);
     }
 
-    private static void timeConverter(File file) throws IOException{
+    private static void timeNeededToReadTheFile(File file) throws IOException {
         long startTime = System.nanoTime();
         List<String> readingFile = Files.readAllLines(Paths.get(String.valueOf(file)), StandardCharsets.UTF_8);
         long endTime = System.nanoTime();
