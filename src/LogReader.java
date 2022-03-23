@@ -14,6 +14,7 @@ public class LogReader {
 
     final private static String timestampRgx = "(?<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})";
     final private static String levelRgx = "(?<level>INFO|ERROR|WARN|TRACE|DEBUG|FATAL)";
+    final static String classRgx = "\\[(?<class>[^\\]]+)]";
 
     public static void main(String[] args) throws IOException {
 
@@ -23,17 +24,21 @@ public class LogReader {
             List<String> dataMatches = new ArrayList<>();
             List<String> lvlMatches = new ArrayList<>();
             Map<String, Integer> mapLvl = new HashMap<>();
+            Set<String> librarySet = new HashSet<>();
             long startTime = System.nanoTime();
             while ((strLine = bufferedReader.readLine()) != null) {
                 Matcher m = Pattern.compile(timestampRgx).matcher(strLine);
                 Matcher lvl = Pattern.compile(levelRgx).matcher(strLine);
+                Matcher lib = Pattern.compile(classRgx).matcher(strLine);
                 while (m.find()) {
                     dataMatches.add(m.group());
                 }
                 while (lvl.find()) {
                     lvlMatches.add(lvl.group());
                 }
-                System.out.println(strLine);
+                while(lib.find()){
+                    librarySet.add(lib.group());
+                }
             }
 
             long endTime = System.nanoTime();
@@ -42,22 +47,28 @@ public class LogReader {
 
             timeConverter(duration);
 
-            List<String> sortedMatches = dataMatches.stream().sorted().toList();
+            List<String> sortedMatches = dataMatches.stream().sorted().toList(); // it's sorted because first log from server.log is the newest from whole file and due to this case, it has to sorted ;)
 
             String dataOfLastLog = sortedMatches.get(sortedMatches.size() - 1);
-//            System.out.println(dataOfLastLog);
+
             String dataOfFirstLog = sortedMatches.get(0);
-//            System.out.println(dataOfFirstLog);
+
             differenceBetweenLastAndFirstLog(dataOfFirstLog, dataOfLastLog);
 
             thrownLogSeverity(lvlMatches, mapLvl);
 
             ratioOfErrorLogsOrHigherToTheRest(mapLvl);
 
+            distinctTypesOfLibrariesInLogs(librarySet);
+
 
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+    }
+
+    private static void distinctTypesOfLibrariesInLogs(Set<String> librarySet){
+        System.out.println("\n Libraries in log: " + librarySet);
     }
 
     private static void thrownLogSeverity(List<String> lvlMatches, Map<String, Integer> mapLvl) {
@@ -83,18 +94,18 @@ public class LogReader {
             }
         }
         ratio = (double) logsWithSeverityErrorOrHigher / (logsWithSeverityErrorOrHigher + logsWithSeverityLessThanError);
-        System.out.printf("\nThe share of logs with a severity of 'ERROR' or higher compared to all logs is around: %.2f", ratio);
+        System.out.printf("\nThe share of logs with a severity of 'ERROR' or higher compared to all logs is around: %.2f\n", ratio);
     }
 
     private static void timeConverter(long duration) {
         if (duration <= 1_000_000_000) {
-            System.out.println("\nFile has been written in: " + duration + " nanoseconds.");
+            System.out.println("\nFile has been written in: " + duration + " nanoseconds.\n");
         } else if (duration < 60_000_000_000L) {
             long timeConvertedIntoSeconds = TimeUnit.SECONDS.convert(duration, TimeUnit.NANOSECONDS);
-            System.out.println("\nFile has been written in: " + timeConvertedIntoSeconds + " seconds.");
+            System.out.println("\nFile has been written in: " + timeConvertedIntoSeconds + " seconds.\n");
         } else if (duration > 60_000_000_000L) {
             long timeConvertedIntoMinutes = TimeUnit.MINUTES.convert(duration, TimeUnit.NANOSECONDS);
-            System.out.println("\nFile has been written in: " + timeConvertedIntoMinutes + " minutes.");
+            System.out.println("\nFile has been written in: " + timeConvertedIntoMinutes + " minutes.\n");
         }
     }
 
@@ -111,7 +122,7 @@ public class LogReader {
             long differenceInMinutes = (differenceInMilliseconds / (1000L * 60)) % 60;
             long differenceInSeconds = (differenceInMilliseconds / 1000L) % 60;
 
-            System.out.printf("\nDifference between first and last log is: %d years, %d days, %d hours, %d minutes, %d seconds.",
+            System.out.printf("\nDifference between first and last log is: %d years, %d days, %d hours, %d minutes, %d seconds.\n",
                     differenceInYears, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds);
         } catch (ParseException e) {
             e.printStackTrace();
