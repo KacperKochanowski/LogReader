@@ -37,9 +37,9 @@ public class LogReader {
                     .collect(Collectors.toList());
 
             for (File file : sortedFiles) {
-                FileInputStream fStream = new FileInputStream(file);
+                FileReader fStream = new FileReader(file);
                 long startTime = System.nanoTime();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fStream));
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                 long endTime = System.nanoTime();
                 long duration = (endTime - startTime);
                 timeConverter(duration);
@@ -77,7 +77,7 @@ public class LogReader {
 
                 distinctTypesOfLibrariesInLogs(librarySet);
 
-                fStream.close();
+                bufferedReader.close();
             }
         }
     }
