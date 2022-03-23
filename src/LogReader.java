@@ -37,7 +37,6 @@ public class LogReader {
                     .collect(Collectors.toList());
 
             for (File file : sortedFiles) {
-                FileReader fStream = new FileReader(file);
                 long startTime = System.nanoTime();
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
                 long endTime = System.nanoTime();
@@ -62,8 +61,9 @@ public class LogReader {
                         librarySet.add(lib.group());
                     }
                 }
+                bufferedReader.close();
 
-                List<String> sortedMatches = dataMatches.stream().sorted().toList(); // it's sorted because first log from server.log is the newest from whole file and due to this case, it has to sorted ;)
+                List<String> sortedMatches = dataMatches.stream().sorted().toList(); // it's sorted because first log from "server.log" is the newest from whole file and due to this case, it has to sorted ;)
 
                 String dataOfLastLog = sortedMatches.get(sortedMatches.size() - 1);
 
@@ -77,8 +77,9 @@ public class LogReader {
 
                 distinctTypesOfLibrariesInLogs(librarySet);
 
-                bufferedReader.close();
             }
+        } catch (IOException e) {
+            throw new FileNotFoundException();
         }
     }
 
