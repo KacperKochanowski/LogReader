@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -17,13 +16,12 @@ public class LogReader {
 
     final private static String timestampRgx = "(?<timestamp>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3})";
     final private static String levelRgx = "(?<level>INFO|ERROR|WARN|TRACE|DEBUG|FATAL)";
-    final static String classRgx = "\\[(?<class>[^\\]]+)]";
-    private static List<File> sortedFiles;
+    final static String classRgx = "\\[(?<class>[^]]+)]";
 
     public static void main(String[] args) throws IOException {
 
-        try (Stream<Path> paths = Files.walk(Paths.get("D:\\logs"))) {
-            sortedFiles = paths
+        try (Stream<Path> paths = Files.walk(Paths.get("E:\\logs"))) {
+            List<File> sortedFiles = paths
                     .filter(Files::isRegularFile)
                     .sorted((f1, f2) -> {
                         try {
@@ -34,7 +32,7 @@ public class LogReader {
                         }
                     })
                     .map(Path::toFile)
-                    .collect(Collectors.toList());
+                    .toList();
 
             for (File file : sortedFiles) {
                 long startTime = System.nanoTime();
@@ -76,10 +74,11 @@ public class LogReader {
                 ratioOfAtLeastErrorLogsToAll(mapLvl);
 
                 distinctTypesOfLibrariesInLogs(librarySet);
-
             }
-        } catch (IOException e) {
-            throw new FileNotFoundException();
+            //                long endTime = System.nanoTime();
+            //                long duration = (endTime - startTime);
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getMessage());
         }
     }
 
