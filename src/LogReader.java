@@ -72,17 +72,17 @@ public class LogReader {
     }
 
     private static void ratioOfErrorLogsOrHigherToTheRest(Map<String, Integer> mapLvl) {
-        int logsWithErrorOrHigherSeverity = 0;
-        int logsWithLessSeverityThanError = 0;
+        int logsWithSeverityErrorOrHigher = 0;
+        int logsWithSeverityLessThanError = 0;
         double ratio;
         for (Map.Entry<String, Integer> lvl : mapLvl.entrySet()) {
             if (lvl.getKey().equals("ERROR") || lvl.getKey().equals("FATAL")) {
-                logsWithErrorOrHigherSeverity += lvl.getValue();
+                logsWithSeverityErrorOrHigher += lvl.getValue();
             } else {
-                logsWithLessSeverityThanError += lvl.getValue();
+                logsWithSeverityLessThanError += lvl.getValue();
             }
         }
-        ratio = (double) logsWithErrorOrHigherSeverity / (logsWithErrorOrHigherSeverity + logsWithLessSeverityThanError);
+        ratio = (double) logsWithSeverityErrorOrHigher / (logsWithSeverityErrorOrHigher + logsWithSeverityLessThanError);
         System.out.printf("\nThe share of logs with a severity of 'ERROR' or higher compared to all logs is around: %.2f", ratio);
     }
 
