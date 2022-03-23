@@ -1,5 +1,4 @@
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,47 +37,47 @@ public class LogReader {
                     .collect(Collectors.toList());
 
             for (File file : sortedFiles) {
-                try (FileInputStream fStream = new FileInputStream(file)) {
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fStream));
-                    String strLine;
-                    List<String> dataMatches = new ArrayList<>();
-                    List<String> lvlMatches = new ArrayList<>();
-                    Map<String, Integer> mapLvl = new HashMap<>();
-                    Set<String> librarySet = new HashSet<>();
-                    while ((strLine = bufferedReader.readLine()) != null) {
-                        Matcher m = Pattern.compile(timestampRgx).matcher(strLine);
-                        Matcher lvl = Pattern.compile(levelRgx).matcher(strLine);
-                        Matcher lib = Pattern.compile(classRgx).matcher(strLine);
-                        while (m.find()) {
-                            dataMatches.add(m.group());
-                        }
-                        while (lvl.find()) {
-                            lvlMatches.add(lvl.group());
-                        }
-                        while (lib.find()) {
-                            librarySet.add(lib.group());
-                        }
+                FileInputStream fStream = new FileInputStream(file);
+                long startTime = System.nanoTime();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fStream));
+                long endTime = System.nanoTime();
+                long duration = (endTime - startTime);
+                timeConverter(duration);
+                String strLine;
+                List<String> dataMatches = new ArrayList<>();
+                List<String> lvlMatches = new ArrayList<>();
+                Map<String, Integer> mapLvl = new HashMap<>();
+                Set<String> librarySet = new HashSet<>();
+                while ((strLine = bufferedReader.readLine()) != null) {
+                    Matcher m = Pattern.compile(timestampRgx).matcher(strLine);
+                    Matcher lvl = Pattern.compile(levelRgx).matcher(strLine);
+                    Matcher lib = Pattern.compile(classRgx).matcher(strLine);
+                    while (m.find()) {
+                        dataMatches.add(m.group());
                     }
-                    timeNeededToReadTheFile(file);
-
-                    List<String> sortedMatches = dataMatches.stream().sorted().toList(); // it's sorted because first log from server.log is the newest from whole file and due to this case, it has to sorted ;)
-
-                    String dataOfLastLog = sortedMatches.get(sortedMatches.size() - 1);
-
-                    String dataOfFirstLog = sortedMatches.get(0);
-
-                    differenceBetweenLastAndFirstLog(dataOfFirstLog, dataOfLastLog);
-
-                    thrownLogSeverity(lvlMatches, mapLvl);
-
-                    ratioOfAtLeastErrorLogsToAll(mapLvl);
-
-                    distinctTypesOfLibrariesInLogs(librarySet);
-
-
-                } catch (Exception e) {
-                    System.out.println("Error: " + e.getMessage());
+                    while (lvl.find()) {
+                        lvlMatches.add(lvl.group());
+                    }
+                    while (lib.find()) {
+                        librarySet.add(lib.group());
+                    }
                 }
+
+                List<String> sortedMatches = dataMatches.stream().sorted().toList(); // it's sorted because first log from server.log is the newest from whole file and due to this case, it has to sorted ;)
+
+                String dataOfLastLog = sortedMatches.get(sortedMatches.size() - 1);
+
+                String dataOfFirstLog = sortedMatches.get(0);
+
+                differenceBetweenLastAndFirstLog(dataOfFirstLog, dataOfLastLog);
+
+                thrownLogSeverity(lvlMatches, mapLvl);
+
+                ratioOfAtLeastErrorLogsToAll(mapLvl);
+
+                distinctTypesOfLibrariesInLogs(librarySet);
+
+                fStream.close();
             }
         }
     }
@@ -113,11 +112,7 @@ public class LogReader {
         System.out.printf("\nThe share of logs with a severity of 'ERROR' or higher compared to all logs is around: %.2f\n", ratio);
     }
 
-    private static void timeNeededToReadTheFile(File file) throws IOException {
-        long startTime = System.nanoTime();
-        List<String> readingFile = Files.readAllLines(Paths.get(String.valueOf(file)), StandardCharsets.UTF_8);
-        long endTime = System.nanoTime();
-        long duration = (endTime - startTime);
+    private static void timeConverter(long duration) {
         if (duration <= 1_000_000_000) {
             System.out.println("\nThe file was read in: " + duration + " nanoseconds.\n");
         } else if (duration < 60_000_000_000L) {
