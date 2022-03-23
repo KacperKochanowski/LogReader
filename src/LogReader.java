@@ -52,6 +52,9 @@ public class LogReader {
 
             thrownLogSeverity(lvlMatches, mapLvl);
 
+            ratioOfErrorLogsOrHigherToTheRest(mapLvl);
+
+
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -65,7 +68,22 @@ public class LogReader {
                 mapLvl.put(lvl, mapLvl.get(lvl) + 1);
             }
         }
-        System.out.println("\n Types of logs: " + mapLvl);
+        System.out.println("\nTypes of logs: " + mapLvl);
+    }
+
+    private static void ratioOfErrorLogsOrHigherToTheRest(Map<String, Integer> mapLvl) {
+        int logsWithErrorOrHigherSeverity = 0;
+        int logsWithLessSeverityThanError = 0;
+        double ratio;
+        for (Map.Entry<String, Integer> lvl : mapLvl.entrySet()) {
+            if (lvl.getKey().equals("ERROR") || lvl.getKey().equals("FATAL")) {
+                logsWithErrorOrHigherSeverity += lvl.getValue();
+            } else {
+                logsWithLessSeverityThanError += lvl.getValue();
+            }
+        }
+        ratio = (double) logsWithErrorOrHigherSeverity / (logsWithErrorOrHigherSeverity + logsWithLessSeverityThanError);
+        System.out.printf("\nThe share of logs with a severity of 'ERROR' or higher compared to all logs is around: %.2f", ratio);
     }
 
     private static void timeConverter(long duration) {
