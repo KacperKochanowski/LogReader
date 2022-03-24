@@ -20,7 +20,7 @@ public class LogReader {
 
     public static void main(String[] args) throws IOException {
 
-        try (Stream<Path> paths = Files.walk(Paths.get("E:\\logs"))) {
+        try (Stream<Path> paths = Files.walk(Paths.get("D:\\logs"))) {
             List<File> sortedFiles = paths
                     .filter(Files::isRegularFile)
                     .sorted((f1, f2) -> {
@@ -37,9 +37,11 @@ public class LogReader {
             for (File file : sortedFiles) {
                 long startTime = System.nanoTime();
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+                /*
+                I am not sure do I understood correctly sentence to show in console time, which elapsed for reading the file.
                 long endTime = System.nanoTime();
                 long duration = (endTime - startTime);
-                timeConverter(duration);
+                */
                 String strLine;
                 List<String> dataMatches = new ArrayList<>();
                 List<String> lvlMatches = new ArrayList<>();
@@ -61,6 +63,11 @@ public class LogReader {
                 }
                 bufferedReader.close();
 
+                long endTime = System.nanoTime();
+                long duration = (endTime - startTime);
+
+                timeConverter(duration);
+
                 List<String> sortedMatches = dataMatches.stream().sorted().toList(); // it's sorted because first log from "server.log" is the newest from whole file and due to this case, it has to sorted ;)
 
                 String dataOfLastLog = sortedMatches.get(sortedMatches.size() - 1);
@@ -69,24 +76,26 @@ public class LogReader {
 
                 differenceBetweenLastAndFirstLog(dataOfFirstLog, dataOfLastLog);
 
-                thrownLogSeverity(lvlMatches, mapLvl);
+                logLevelsWithOccurrences(lvlMatches, mapLvl);
 
                 ratioOfAtLeastErrorLogsToAll(mapLvl);
 
                 distinctTypesOfLibrariesInLogs(librarySet);
             }
-            //                long endTime = System.nanoTime();
-            //                long duration = (endTime - startTime);
-        } catch (FileNotFoundException e) {
+
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
 
     private static void distinctTypesOfLibrariesInLogs(Set<String> librarySet) {
+        // Same as with time elapsed for reading I'm not sure do I understood correctly sentence to show number of unique libraries in log,
+        // so I decided to use Set instead of Map with type of library as Key and value as number of occurrences.
+        System.out.println("\nNumber of unique libraries: " + librarySet.size());
         System.out.println("\nLibraries in log: " + librarySet);
     }
 
-    private static void thrownLogSeverity(List<String> lvlMatches, Map<String, Integer> mapLvl) {
+    private static void logLevelsWithOccurrences(List<String> lvlMatches, Map<String, Integer> mapLvl) {
         for (String lvl : lvlMatches) {
             if (!mapLvl.containsKey(lvl)) {
                 mapLvl.put(lvl, 1);
