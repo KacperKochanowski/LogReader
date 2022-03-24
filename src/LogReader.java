@@ -92,7 +92,7 @@ public class LogReader {
     private static void distinctTypesOfLibrariesInLogs(Set<String> librarySet) {
         // Same as with time elapsed for reading I'm not sure do I understood correctly sentence to show number of unique libraries in log.
         System.out.println("\nNumber of unique libraries: " + librarySet.size());
-        System.out.println("\nLibraries in log: " + librarySet);
+        System.out.println("\nLibraries in logs: " + librarySet);
     }
 
     private static void logLevelsWithOccurrences(List<String> lvlMatches, Map<String, Integer> mapLvl) {
