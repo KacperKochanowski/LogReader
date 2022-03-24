@@ -37,8 +37,9 @@ public class LogReader {
             for (File file : sortedFiles) {
                 long startTime = System.nanoTime();
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-                /*
+                 /*
                 I am not sure do I understood correctly sentence to show in console time, which elapsed for reading the file.
+                Another way would be to uncomment the two lines below and delete lines 67 - 68
                 long endTime = System.nanoTime();
                 long duration = (endTime - startTime);
                 */
@@ -89,8 +90,7 @@ public class LogReader {
     }
 
     private static void distinctTypesOfLibrariesInLogs(Set<String> librarySet) {
-        // Same as with time elapsed for reading I'm not sure do I understood correctly sentence to show number of unique libraries in log,
-        // so I decided to use Set instead of Map with type of library as Key and value as number of occurrences.
+        // Same as with time elapsed for reading I'm not sure do I understood correctly sentence to show number of unique libraries in log.
         System.out.println("\nNumber of unique libraries: " + librarySet.size());
         System.out.println("\nLibraries in log: " + librarySet);
     }
